@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Happy Birthday Kaya</title>
+  <link rel="preload" as="image" href="assets/cake.jpg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <div class="bg"></div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="title">
+      </div>
+
+      <div class="controls">
+        <button id="btnArm" class="btn primary" type="button">Arm Audio</button>
+        <button id="btnMic" class="btn" type="button">Enable Blow</button>
+      </div>
+    </header>
+
+    <section class="stage">
+      <div class="cakeWrap" id="cakeWrap">
+        <img class="cakeImg" src="assets/cake.jpg" alt="Birthday cake for Kaya" />
+
+        <div class="cinematicOverlay" id="cinematicOverlay" aria-hidden="true"></div>
+        <div class="smokeLayer" id="smokeLayer" aria-hidden="true"></div>
+
+        <!-- ✅ Birthday toast (appears only after blow) -->
+        <div class="toastMsg" id="toastMsg" aria-hidden="true">
+          Cheers to more fun, more memories, and more cake.<br>
+          Happy Birthday✨, Kaya!
+        </div>
+
+        <!-- ✅ Make a wish (appears after toast, stays) -->
+        <div class="wishCenter" id="wishCenter" aria-hidden="true">
+          Make a wish ✨
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardTitle">Make a wish 🎂</div>
+        <div class="cardText">
+          1) Tap <b>Arm Audio</b> once (needed on phones).<br/>
+          2) Tap <b>Enable Blow</b> and blow — or press Blow Now.
+        </div>
+
+        <div class="cardActions">
+          <button id="btnBlow" class="btn danger" type="button">Blow Now</button>
+          <button id="btnReset" class="btn" type="button">Reset</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+    <audio id="bgm" preload="auto" loop="false">
+    <source src="assets/world-is-ugly.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
