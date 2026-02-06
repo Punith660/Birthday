@@ -280,22 +280,38 @@ btnMic.addEventListener("click", async ()=>{
 
 async function enableMic(){
 
-  micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  if(!navigator.mediaDevices?.getUserMedia){
+    alert("Mic not supported");
+    return;
+  }
+
+  micStream = await navigator.mediaDevices.getUserMedia({
+    audio:{
+      echoCancellation:false,
+      noiseSuppression:false,
+      autoGainControl:false
+    }
+  });
 
   const Ctx = window.AudioContext || window.webkitAudioContext;
   micCtx = new Ctx();
 
-  if(micCtx.state==="suspended") await micCtx.resume();
+  // ⭐ CRITICAL FOR MOBILE
+  if(micCtx.state === "suspended"){
+    await micCtx.resume();
+  }
 
   const src = micCtx.createMediaStreamSource(micStream);
 
   micAnalyser = micCtx.createAnalyser();
-  micAnalyser.fftSize=2048;
+  micAnalyser.fftSize = 1024; // smaller = faster mobile detection
+  micAnalyser.smoothingTimeConstant = 0.3;
 
   src.connect(micAnalyser);
 
   listenForBlow();
 }
+
 
 function disableMic(){
   if(micRAF) cancelAnimationFrame(micRAF);
@@ -304,33 +320,48 @@ function disableMic(){
 
 function listenForBlow(){
 
-  const data=new Uint8Array(micAnalyser.fftSize);
+  const data = new Uint8Array(micAnalyser.fftSize);
 
-  let score=0;
-  let last=0;
+  let score = 0;
+  let lastTrigger = 0;
 
-  const loop=()=>{
-    micRAF=requestAnimationFrame(loop);
+  // ⭐ MOBILE TUNED VALUES
+  const rmsThreshold = 0.045;   // MUCH more phone friendly
+  const sustain = 0.60;         // easier trigger
+
+  const loop = () => {
+
+    micRAF = requestAnimationFrame(loop);
+
+    if(!micAnalyser) return;
 
     micAnalyser.getByteTimeDomainData(data);
 
-    let sum=0;
+    let sum = 0;
     for(let i=0;i<data.length;i++){
-      const v=(data[i]-128)/128;
-      sum+=v*v;
+      const v = (data[i]-128)/128;
+      sum += v*v;
     }
 
-    const rms=Math.sqrt(sum/data.length);
+    const rms = Math.sqrt(sum/data.length);
 
-    if(rms>0.08) score=Math.min(1,score+0.08);
-    else score=Math.max(0,score-0.03);
+    // Build confidence
+    if(rms > rmsThreshold){
+      score = Math.min(1, score + 0.10);
+    }else{
+      score = Math.max(0, score - 0.04);
+    }
 
-    if(score>0.75 && performance.now()-last>1500){
-      last=performance.now();
-      score=0;
+    const now = performance.now();
+
+    if(score > sustain && now - lastTrigger > 1500){
+      lastTrigger = now;
+      score = 0;
       triggerBlowMoment();
     }
   };
 
   loop();
 }
+
+
